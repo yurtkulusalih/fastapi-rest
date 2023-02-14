@@ -1,0 +1,38 @@
+version: "3.7"
+
+# This is the local development docker-compose file. Therefore we provide secrets in here but normally, we should not pass them like this
+services:
+  fastapi-postgres:
+    image: postgres:12-alpine
+    container_name: "fastapi-postgres"
+    env_file:
+      - .env
+    volumes:
+      - fastapi-postgres-data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+
+  fastapi-api-service:
+    container_name: fastapi-backend
+    build: .
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db/postgres"
+    env_file:
+      - .env
+    volumes:
+      - ./app:/code/app
+    expose:
+      - '8081'
+    ports:
+      - 8081:8081
+    # depends_on:
+    #   - fastapi-postgres
+    entrypoint: |
+      bash -c ' uvicorn app.main:app --host=0.0.0.0 --port 8081 --reload'
+
+volumes:
+  fastapi-postgres-data:
+
+
